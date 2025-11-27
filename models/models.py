@@ -28,7 +28,7 @@ def models(model_name: str) -> nn.Module:
     elif model_name == "model2":
         return Model2()
     elif model_name == "Fast_test_v1":
-        return Model2()
+        return Fast_Test_v1()
     else:
         raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")
 
@@ -52,7 +52,7 @@ class Model1(nn.Module):
 
 class Model2(nn.Module):
     """Name: 'model2' - Another dummy CNN with one conv layer"""
-    def __init__(self, in_channels=3, out_classes=10):
+    def __init__(self, in_channels=3, out_classes=15):
         super(Model2, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, 32, kernel_size=3, padding=1)
         self.pool = nn.AdaptiveAvgPool2d(1)
@@ -69,11 +69,12 @@ class Model2(nn.Module):
 
 class Fast_Test_v1(nn.Module):
     """Name: 'Fast_test_v1' - Dummy CNN with one conv layer"""
-    def __init__(self, in_channels=3, out_classes=10):
+    def __init__(self, in_channels=3, out_classes=15):
         super(Fast_Test_v1, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, 16, kernel_size=3, padding=1)
         self.pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(16, out_classes)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = self.conv1(x)
@@ -81,4 +82,5 @@ class Fast_Test_v1(nn.Module):
         x = self.pool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
+        x = self.sigmoid(x)
         return x
