@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from models.manifold_mixup.train import train as train_manifold_mixup
 from models.mo_ex.train import train as train_mo_ex
+from models.asl.train import train as train_asl
 
 def train(
         model_name: str, 
@@ -70,7 +71,7 @@ def train(
         )
     
     elif model_name == "Mo_Ex":
-        train_manifold_mixup(
+        train_mo_ex(
             model = model,
             optimizer = optimizer,
             dataset=dataset, start_epoch=start_epoch, end_epoch=end_epoch,
@@ -79,7 +80,7 @@ def train(
         )
     
     elif model_name == "ASL":
-        train_manifold_mixup(
+        train_asl(
             model = model,
             optimizer = optimizer,
             dataset=dataset, start_epoch=start_epoch, end_epoch=end_epoch,

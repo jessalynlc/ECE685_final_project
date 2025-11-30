@@ -4,7 +4,7 @@ import torch
 import os
 from tqdm import tqdm
 import torch.nn as nn
-from models.asl.asl import *
+from asl.asl import *
 
 def train(
         model: nn.Module, 
@@ -43,8 +43,8 @@ def train(
                 imgs, labels = imgs.to(device), labels.to(device)
 
                 optimizer.zero_grad()
-                outputs = model(imgs)[0]
-                loss = criterion(outputs, labels)
+                logits, mixed_y = model(imgs, labels)
+                loss = criterion(logits, mixed_y)
                 loss.backward()
                 optimizer.step()
 

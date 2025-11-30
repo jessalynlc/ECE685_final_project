@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from models.manifold_mixup.val import val as val_manifold_mixup
+from models.mo_ex.val import val as val_mo_ex
 
 def val(
         model_name: str,
@@ -63,7 +64,7 @@ def val(
         )
     
     elif model_name == "Mo_Ex":
-        val_manifold_mixup(
+        val_mo_ex(
             model = model,
             dataset=dataset, epoch=epoch,
             batch_size=batch_size, device=device

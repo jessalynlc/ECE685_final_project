@@ -1,7 +1,9 @@
 import torch.nn as nn
+import torchvision.models as torchvision_models
 from models.manifold_mixup.resnet_manifold_mixup import build_model as build_manifold_mixup
+from models.mo_ex.mo_ex import build_model as build_mo_ex
 
-def models(model_name: str, backbone_name: str, num_classes: int = 15) -> nn.Module:
+def models(model_name: str, backbone_name: str = "resnet18", num_classes: int = 15) -> nn.Module:
     """
     Returns a CNN model based on the model_name.
 
@@ -36,7 +38,7 @@ def models(model_name: str, backbone_name: str, num_classes: int = 15) -> nn.Mod
         return build_manifold_mixup(num_classes=num_classes, backbone_name=backbone_name)
     
     elif model_name == "Mo_Ex":
-        return build_manifold_mixup(num_classes=num_classes, backbone_name=backbone_name)
+        return build_mo_ex(num_classes=num_classes, backbone_name=backbone_name)
     
     elif model_name == "ASL":
         return build_base_model(num_classes=num_classes, backbone_name=backbone_name)
@@ -62,7 +64,7 @@ def build_base_model(num_classes: int = 15, backbone_name: str = "resnet18"):
     """
 
     #load a torchvision resnet
-    backbone = getattr(models, backbone_name)(pretrained=False)
+    backbone = getattr(torchvision_models, backbone_name)(pretrained=False)
     #replace final FC layer to match the number of classes
     in_features = backbone.fc.in_features
     backbone.fc = nn.Linear(in_features, num_classes)

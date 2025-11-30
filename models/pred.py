@@ -4,6 +4,7 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 from models.manifold_mixup.pred import get_predictions as pred_manifold_mixup
+from models.mo_ex.pred import get_predictions as pred_mo_ex
 
 def pred(
     model_name: str,
@@ -57,7 +58,7 @@ def pred(
         )
     
     elif model_name == "Mo_Ex":
-        return pred_manifold_mixup(
+        return pred_mo_ex(
             model=model, 
             dataset=dataset, 
             batch_size=batch_size, device=device

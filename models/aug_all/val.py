@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from models.asl.asl import *
+from asl.asl import *
 
 def val(
         model: nn.Module, 
