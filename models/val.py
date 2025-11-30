@@ -1,9 +1,9 @@
-from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from tqdm import tqdm
+from models.manifold_mixup.val import val as val_manifold_mixup
 
 def val(
+        model_name: str,
         model: nn.Module, 
         dataset: torch.utils.data.Dataset, 
         epoch: int, 
@@ -20,23 +20,15 @@ def val(
         batch_size (int, optional): Batch size. Defaults to 16.
         device (str, optional): Device to use ("cpu" or "cuda"). Defaults to "cpu".
     """
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    criterion = nn.BCELoss()
-    model.to(device)
-    model.eval()  # Set model to evaluation mode
+    available_models = [
+        "ManiFold_Mixup"
+    ]
 
-    running_loss = 0.0
-
-    with torch.no_grad():  # Disable gradient computation
-        with tqdm(loader, desc=f"Validation Epoch {epoch}", unit="batch") as tepoch:
-            for imgs, labels, _ in tepoch:
-                imgs, labels = imgs.to(device), labels.to(device)
-
-                outputs = model(imgs)
-                loss = criterion(outputs, labels)
-
-                running_loss += loss.item() * imgs.size(0)
-                tepoch.set_postfix(loss=loss.item())
-
-    epoch_loss = running_loss / len(tepoch)*batch_size
-    print(f"Validation Epoch {epoch} completed - Average Loss: {epoch_loss:.4f}")
+    if  model_name == "ManiFold_Mixup":
+        val_manifold_mixup(
+            model = model,
+            dataset=dataset, epoch=epoch,
+            batch_size=batch_size, device=device
+        )
+    else:
+        raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")

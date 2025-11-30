@@ -1,21 +1,29 @@
-from torch.utils.data import DataLoader
 import torch.optim as optim
 import torch
-import os
-from tqdm import tqdm
 import torch.nn as nn
+import os
+from models.manifold_mixup.train import train as train_manifold_mixup
+from models.mo_ex.train import train as train_mo_ex
 
 def train(
-        model: nn.Module, 
+        model_name: str, 
+        model: nn.Module,
         optimizer: optim.Optimizer,
         dataset: torch.utils.data.Dataset, start_epoch: int, end_epoch: int,
         batch_size: int = 16, device: str = "cpu", 
         save: bool = False, save_every: int = 1, checkpoint_dir="checkpoints"
     ):
     """
-    Train a PyTorch model on the given dataset.
+    Train a PyTorch model on the given dataset
+    Returns a CNN model based on the model_name.
 
     Args:
+        model_name (str): Name of the model to return. 
+        Options: 
+        {
+            "ManiFold_Mixup": ResNet w/ ManiFold_Mixup
+        }
+        
         model (nn.Module): PyTorch model to train.
         optimizer (torch.optim.Optimizer): Optimizer for model parameters.
         dataset (torch.utils.data.Dataset): Dataset to use for training.
@@ -28,33 +36,22 @@ def train(
         checkpoint_dir (str, optional): Directory to save checkpoints. Defaults to "checkpoints".
     """
     os.makedirs(checkpoint_dir, exist_ok=True)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    criterion = nn.BCELoss()
-    model.to(device)
+    
+    available_models = [
+        "ManiFold_Mixup"
+    ]
 
-    for epoch in range(start_epoch, end_epoch):
-        model.train()
-        running_loss = 0.0
+    if  model_name == "ManiFold_Mixup":
+        train_manifold_mixup(
+            model = model,
+            optimizer = optimizer,
+            dataset=dataset, start_epoch=start_epoch, end_epoch=end_epoch,
+            batch_size=batch_size, device=device, 
+            save=save, save_every=save_every, checkpoint_dir=checkpoint_dir
+        )
+    else:
+        raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")
 
-        # tqdm progress bar for batches
-        with tqdm(loader, desc=f"Epoch {epoch+1}/{end_epoch}", unit="batch") as tepoch:
-            for imgs, labels, _ in tepoch:
-                imgs, labels = imgs.to(device), labels.to(device)
-
-                optimizer.zero_grad()
-                outputs = model(imgs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-
-                running_loss += loss.item() * imgs.size(0)
-                tepoch.set_postfix(loss=loss.item())
-
-        epoch_loss = running_loss / len(tepoch)*batch_size
-        print(f"Epoch {epoch+1}/{end_epoch} completed - Average Loss: {epoch_loss:.4f}")
-
-        # Save checkpoint according to save flag and save_every
-        if save and ((epoch + 1) % save_every == 0):
-            checkpoint_path = os.path.join(checkpoint_dir, f"clf_epoch{epoch+1}.pth")
-            torch.save(model.state_dict(), checkpoint_path)
-            print(f"Checkpoint saved: {checkpoint_path}")
+    
+    
+    
