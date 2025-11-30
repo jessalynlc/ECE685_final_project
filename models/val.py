@@ -14,6 +14,11 @@ def val(
     Validate a PyTorch model on the given dataset.
 
     Args:
+        model_name (str): Name of the model to return. 
+        Options: 
+        {
+            "ManiFold_Mixup": ResNet w/ ManiFold_Mixup
+        }
         model (nn.Module): PyTorch model to validate.
         dataset (torch.utils.data.Dataset): Dataset to use for validation.
         epoch (int): Current epoch number (for logging).

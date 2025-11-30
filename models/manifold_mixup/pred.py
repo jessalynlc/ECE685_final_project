@@ -33,10 +33,9 @@ def get_predictions(
     with torch.no_grad():
         for imgs, labs, *_ in loader:
             imgs = imgs.to(device)
-            out = model(imgs)
+            logits, mixed_y = model(imgs)
 
-            # assume model outputs logits for multi-label; convert to probabilities
-            prob = torch.sigmoid(out).cpu().numpy()
+            prob = torch.sigmoid(logits).cpu().numpy()
 
             # ensure labels are numpy
             labs_np = labs.cpu().numpy()

@@ -3,8 +3,10 @@ import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
+from models.manifold_mixup.pred import get_predictions as pred_manifold_mixup
 
-def get_predictions(
+def pred(
+    model_name: str,
     model: nn.Module,
     dataset: Dataset,
     batch_size: int = 32,
@@ -13,6 +15,11 @@ def get_predictions(
     """Collect model outputs and labels from a dataset.
 
     Args:
+        model_name (str): Name of the model to return. 
+        Options: 
+        {
+            "ManiFold_Mixup": ResNet w/ ManiFold_Mixup
+        }
         model (nn.Module): Trained PyTorch model used for inference.
         dataset (Dataset): Dataset that yields (image, label, ...) tuples.
         batch_size (int, optional): Batch size for the DataLoader. Defaults to 32.
@@ -23,28 +30,16 @@ def get_predictions(
             preds: numpy array of predicted probabilities with dtype np.float32, shape (N, C).
             labels: numpy array of ground-truth labels with dtype np.int64, shape (N, C).
     """
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    model.to(device)
-    model.eval()
+    available_models = [
+        "ManiFold_Mixup"
+    ]
 
-    preds_list = []
-    labels_list = []
+    if  model_name == "ManiFold_Mixup":
+        return pred_manifold_mixup(
+            model=model, 
+            dataset=dataset, 
+            batch_size=batch_size, device=device
+        )
+    else:
+        raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")
 
-    with torch.no_grad():
-        for imgs, labs, *_ in loader:
-            imgs = imgs.to(device)
-            out = model(imgs)
-
-            # assume model outputs logits for multi-label; convert to probabilities
-            prob = torch.sigmoid(out).cpu().numpy()
-
-            # ensure labels are numpy
-            labs_np = labs.cpu().numpy()
-
-            preds_list.append(prob)
-            labels_list.append(labs_np)
-
-    preds = np.vstack(preds_list).astype(np.float32)
-    labels = np.vstack(labels_list).astype(np.int64)
-
-    return preds, labels
