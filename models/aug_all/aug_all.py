@@ -56,6 +56,8 @@ class ResNetMultiMethodAugmentation(nn.Module):
         self.backbone = base_resnet
         self.mix_layers = mix_layers or ["layer1", "layer2", "layer3", "layer4", "fc"]
         self.alpha = alpha
+        self.mix_method = mix_method
+        self.moex_prob = moex_prob
 
         # expose ResNet components for manual forward pass
         self.conv1 = self.backbone.conv1
@@ -113,35 +115,90 @@ class ResNetMultiMethodAugmentation(nn.Module):
             feat_shuf = feat[perm]
             return lam * feat + (1.0 - lam) * feat_shuf
 
+       #MoEx behavior (swapping moments mean/std across batch and re-inject)
+        def do_moex(feat: torch.Tensor):
+            nonlocal lam, perm, mixed_y
+            B, C = feat.shape[:2]
+            # compute per-sample mean/std across spatial dims (H,W)
+            # keep dims for broadcasting: shape (B,C,1,1)
+            eps = 1e-6
+            mu = feat.mean(dim=(2,3), keepdim=True)               # (B,C,1,1)
+            sigma = feat.std(dim=(2,3), unbiased=False, keepdim=True) + eps
+
+            # normalized features
+            feat_norm = (feat - mu) / sigma
+
+            # sample permutation & lambda (lambda used for label interpolation)
+            if perm is None:
+                perm = torch.randperm(B, device=device)
+                # for MoEx, paper suggests high interpolation weight (e.g. lam ≈ 0.9)
+                lam = sample_lambda(self.alpha, device)
+                if y is not None:
+                    y_shuf = y[perm]
+                    mixed_y = lam * y + (1.0 - lam) * y_shuf
+
+            mu_perm = mu[perm]
+            sigma_perm = sigma[perm]
+
+            #mix moments with original moments using lam:
+            #final moments = lam * original_moments + (1-lam) * permuted_moments
+            #Allows softer exchange instead of full swap
+            if lam is None:
+                lam = torch.tensor(1.0, device=device)
+            mu_mix = lam * mu + (1.0 - lam) * mu_perm
+            sigma_mix = lam * sigma + (1.0 - lam) * sigma_perm
+
+            # re-add moments into normalized features
+            feat_mixed = feat_norm * sigma_mix + mu_mix
+            return feat_mixed
+        
+        # choose which mixing fn to call at selected layer
+        def maybe_mix(feat: torch.Tensor):
+            # If mix_method == both, randomly pick which method to apply each forward
+            method = self.mix_method
+            if self.mix_method == "both":
+                method = random.choice(["manifold", "moex"])
+            if method == "manifold":
+                return do_mix(feat)
+            elif method == "moex":
+                # optionally use a probability to do MoEx (paper uses prob p)
+                if random.random() <= self.moex_prob:
+                    return do_moex(feat)
+                else:
+                    return feat
+            else:
+                return feat
+        
         #Residual layers
         out = self.layer1(out)
         if mix_layer == "layer1":
-            out = do_mix(out)
+            out = maybe_mix(out)
 
         out = self.layer2(out)
         if mix_layer == "layer2":
-            out = do_mix(out)
+            out = maybe_mix(out)
 
         out = self.layer3(out)
         if mix_layer == "layer3":
-            out = do_mix(out)
+            out = maybe_mix(out)
 
         out = self.layer4(out)
         if mix_layer == "layer4":
-            out = do_mix(out)
+            out = maybe_mix(out)
 
         #Global pooling and FC
         out = self.avgpool(out)
         out = torch.flatten(out, 1)
         if mix_layer == "fc":
-            out = do_mix(out)
+            out = maybe_mix(out)
 
         #find classifier
         logits = self.fc(out)
         return logits, mixed_y
 
 
-def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: float = 2.0):
+def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: float = 2.0,
+                mix_method: str = "both", moex_prob: float = 0.5):
     """
     Creates ResNet model with manifold mixup.
 
@@ -160,5 +217,5 @@ def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: f
     in_features = backbone.fc.in_features
     backbone.fc = nn.Linear(in_features, num_classes)
     #Wrap with manifold mixup behavior
-    model = ResNetManifoldMixup(backbone, alpha=alpha)
+    model = ResNetMultiMethodAugmentation(backbone, alpha=alpha, mix_method="both", moex_prob=0.5)
     return model
