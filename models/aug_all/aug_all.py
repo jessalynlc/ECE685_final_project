@@ -37,6 +37,7 @@ def sample_lambda(alpha: float, device: torch.device) -> torch.Tensor:
     return lam
 
 # TODO: COMPLETE 
+#modifying this to accept mix manifold and moex
 class ResNetMultiMethodAugmentation(nn.Module):
     """
     This wraps a ResNet model so that data augmentation can be applied inside intermediate layers.
@@ -48,7 +49,9 @@ class ResNetMultiMethodAugmentation(nn.Module):
     behavior:
         Randomly selects a mix_layer during each forward pass. And then mixes feature maps at that layer and mixes labels accordingly.
     """
-    def __init__(self, base_resnet: nn.Module, mix_layers: Optional[List[str]] = None, alpha: float = 2.0):
+    def __init__(self, base_resnet: nn.Module, mix_layers: Optional[List[str]] = None, alpha: float = 2.0,
+                 mix_method: str = "both", #could be manifold, moex, or both
+                 moex_prob: float = 0.5): #probability to apply MoEx when chosen
         super().__init__()
         self.backbone = base_resnet
         self.mix_layers = mix_layers or ["layer1", "layer2", "layer3", "layer4", "fc"]
