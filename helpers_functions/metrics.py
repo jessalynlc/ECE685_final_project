@@ -31,25 +31,12 @@ def evaluate(
     model.eval()
     model.to("cpu")  # pred function should handle device if needed
 
-
-    # Prepare accumulator
-    all_preds = []
-    all_labels = []
-
-
-    # Here we call pred in batches
-    for batch_preds, batch_labels in pred(model_name=model_name, model=model, dataset=dataset, batch_size=batch_size):
-        all_preds.append(batch_preds.cpu())
-        all_labels.append(batch_labels.cpu())
-
-
-    preds = torch.cat(all_preds, dim=0)
-    labels = torch.cat(all_labels, dim=0)
+    # pred 
+    preds, labels = pred(model_name=model_name, model=model, dataset=dataset, batch_size=batch_size)
     num_classes = preds.shape[1]
 
-    # ------------------------------
+
     # General metrics (macro)
-    # ------------------------------
     ap_general = MultilabelAveragePrecision(num_labels=num_classes, average="macro")
     auroc_general = MultilabelAUROC(num_labels=num_classes, average="macro")
     f1_general = MultilabelF1Score(num_labels=num_classes, average="macro")
@@ -60,9 +47,7 @@ def evaluate(
         "F1-score": float(f1_general(preds, labels)),
     }
 
-    # ------------------------------
     # Class-wise metrics
-    # ------------------------------
     ap_classwise = MultilabelAveragePrecision(num_labels=num_classes, average=None)
     auroc_classwise = MultilabelAUROC(num_labels=num_classes, average=None)
     f1_classwise = MultilabelF1Score(num_labels=num_classes, average=None)
@@ -80,9 +65,6 @@ def evaluate(
         for i in range(num_classes)
     }
 
-    # ------------------------------
-    # DataFrame
-    # ------------------------------
     df = pd.DataFrame({
         "metrics": {
             "general": general_metrics,
