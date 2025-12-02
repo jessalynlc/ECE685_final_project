@@ -1,8 +1,9 @@
 import torch.nn as nn
 import torchvision.models as torchvision_models
 from models.manifold_mixup.resnet_manifold_mixup import build_model as build_manifold_mixup
-from models.aug_all.aug_all import build_model as build_aug_all
 from models.mo_ex.resnet_mo_ex import build_model as build_mo_ex
+
+from models.aug_all.aug_all import build_model as build_aug_all_stochastic
 from models.aug_all.resnet_aug_all import build_model as build_aug_all
 
 def models(model_name: str, backbone_name: str = "resnet18", num_classes: int = 15) -> nn.Module:
@@ -47,6 +48,9 @@ def models(model_name: str, backbone_name: str = "resnet18", num_classes: int = 
     
     elif model_name == "All":
         return build_aug_all(num_classes=num_classes, backbone_name=backbone_name)
+    
+    elif model_name == "All_stochastic":
+        return build_aug_all_stochastic(num_classes=num_classes, backbone_name=backbone_name)
 
     else:
         raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")
