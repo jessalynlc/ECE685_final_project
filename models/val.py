@@ -4,6 +4,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from models.manifold_mixup.val import val as val_manifold_mixup
 from models.mo_ex.val import val as val_mo_ex
+from models.asl.val import val as val_asl
+from models.aug_all.val import val as val_aug_all
 
 def val(
         model_name: str,
@@ -40,15 +42,6 @@ def val(
         "All"
     ]
 
-    if  model_name == "ManiFold_Mixup":
-        val_manifold_mixup(
-            model = model,
-            dataset=dataset, epoch=epoch,
-            batch_size=batch_size, device=device
-        )
-    else:
-        raise ValueError(f"Unknown model_name '{model_name}'. Available models: {available_models}")
-    
     if model_name == "Base":
         val_base_model(
             model = model,
@@ -71,14 +64,14 @@ def val(
         )
     
     elif model_name == "ASL":
-        val_manifold_mixup(
+        val_asl(
             model = model,
             dataset=dataset, epoch=epoch,
             batch_size=batch_size, device=device
         )
     
     elif model_name == "All":
-        val_manifold_mixup(
+        val_aug_all(
             model = model,
             dataset=dataset, epoch=epoch,
             batch_size=batch_size, device=device

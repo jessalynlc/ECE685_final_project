@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
 from models.manifold_mixup.pred import get_predictions as pred_manifold_mixup
 from models.mo_ex.pred import get_predictions as pred_mo_ex
+from models.aug_all.pred import get_predictions as pred_aug_all
 
 def pred(
     model_name: str,
@@ -72,7 +73,7 @@ def pred(
         )
     
     elif model_name == "All":
-        return pred_manifold_mixup(
+        return pred_aug_all(
             model=model, 
             dataset=dataset, 
             batch_size=batch_size, device=device

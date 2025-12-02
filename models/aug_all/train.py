@@ -4,7 +4,7 @@ import torch
 import os
 from tqdm import tqdm
 import torch.nn as nn
-from asl.asl import *
+from models.asl.asl import *
 
 def train(
         model: nn.Module, 

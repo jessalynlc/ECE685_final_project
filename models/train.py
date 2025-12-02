@@ -7,6 +7,7 @@ from tqdm import tqdm
 from models.manifold_mixup.train import train as train_manifold_mixup
 from models.mo_ex.train import train as train_mo_ex
 from models.asl.train import train as train_asl
+from models.aug_all.train import train as train_aug_all
 
 def train(
         model_name: str, 
@@ -89,7 +90,7 @@ def train(
         )
     
     elif model_name == "All":
-        train_manifold_mixup(
+        train_aug_all(
             model = model,
             optimizer = optimizer,
             dataset=dataset, start_epoch=start_epoch, end_epoch=end_epoch,
