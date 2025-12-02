@@ -54,7 +54,7 @@ class ResNetMultiMethodAugmentation(nn.Module):
                  moex_prob: float = 0.5): #probability to apply MoEx when chosen
         super().__init__()
         self.backbone = base_resnet
-        self.mix_layers = mix_layers or ["layer1", "layer2", "layer3", "layer4", "fc"]
+        self.mix_layers = mix_layers or ["layer1", "layer2", "layer3", "layer4"]
         self.alpha = alpha
         self.mix_method = mix_method
         self.moex_prob = moex_prob
@@ -194,11 +194,15 @@ class ResNetMultiMethodAugmentation(nn.Module):
 
         #find classifier
         logits = self.fc(out)
+
+        #to prevent asl from crashing
+        if mixed_y is None and y is not None:
+            mixed_y = y
+        
         return logits, mixed_y
 
 
-def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: float = 2.0,
-                mix_method: str = "both", moex_prob: float = 0.5):
+def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: float = 2.0):
     """
     Creates ResNet model with manifold mixup.
 
@@ -211,11 +215,16 @@ def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: f
         model: ResNetManifoldMixup instance
     """
 
-    #load a torchvision resnet
+    # load a torchvision resnet
     backbone = getattr(models, backbone_name)(pretrained=False)
-    #replace final FC layer to match the number of classes
+    # replace final FC layer to match the number of classes
     in_features = backbone.fc.in_features
     backbone.fc = nn.Linear(in_features, num_classes)
-    #Wrap with manifold mixup behavior
-    model = ResNetMultiMethodAugmentation(backbone, alpha=alpha, mix_method="both", moex_prob=0.5)
+    # Wrap with manifold / MoEx behavior using the original defaults
+    model = ResNetMultiMethodAugmentation(
+        backbone,
+        alpha=alpha,
+        mix_method="both",  
+        moex_prob=0.5        
+    )
     return model
