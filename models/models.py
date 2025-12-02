@@ -18,7 +18,8 @@ def models(model_name: str, backbone_name: str = "resnet18", num_classes: int = 
             "ManiFold_Mixup",
             "Mo_Ex",
             "ASL",
-            "All"
+            "All",
+            "All_stochastic"
         }
         backbone (str): Name of the backbone model. 
         num_classes (int): Number of classes in final layer. Defaults to 15.
@@ -31,7 +32,8 @@ def models(model_name: str, backbone_name: str = "resnet18", num_classes: int = 
         "ManiFold_Mixup",
         "Mo_Ex",
         "ASL",
-        "All"
+        "All",
+        "All_stochastic"
     ]
     
     if model_name == "Base":

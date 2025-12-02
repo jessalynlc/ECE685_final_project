@@ -29,7 +29,8 @@ def train(
             "ManiFold_Mixup",
             "Mo_Ex",
             "ASL",
-            "All"
+            "All",
+            "All_stochastic"
         }
         
         model (nn.Module): PyTorch model to train.
@@ -50,7 +51,8 @@ def train(
         "ManiFold_Mixup",
         "Mo_Ex",
         "ASL",
-        "All"
+        "All",
+        "All_stochastic"
     ]
 
     if model_name == "Base":
@@ -89,7 +91,7 @@ def train(
             save=save, save_every=save_every, checkpoint_dir=checkpoint_dir
         )
     
-    elif model_name == "All":
+    elif model_name == "All" or model_name == "All_stochastic":
         train_aug_all(
             model = model,
             optimizer = optimizer,

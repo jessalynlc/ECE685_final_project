@@ -26,7 +26,8 @@ def val(
             "ManiFold_Mixup",
             "Mo_Ex",
             "ASL",
-            "All"
+            "All",
+            "All_stochastic"
         }
         model (nn.Module): PyTorch model to validate.
         dataset (torch.utils.data.Dataset): Dataset to use for validation.
@@ -39,7 +40,8 @@ def val(
         "ManiFold_Mixup",
         "Mo_Ex",
         "ASL",
-        "All"
+        "All",
+        "All_stochastic"
     ]
 
     if model_name == "Base":
@@ -70,7 +72,7 @@ def val(
             batch_size=batch_size, device=device
         )
     
-    elif model_name == "All":
+    elif model_name == "All" or model_name == "All_stochastic":
         val_aug_all(
             model = model,
             dataset=dataset, epoch=epoch,
