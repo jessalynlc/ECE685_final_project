@@ -13,7 +13,7 @@ def pred(
     dataset: Dataset,
     batch_size: int = 32,
     device: str = "cpu"
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Collect model outputs and labels from a dataset.
 
     Args:
@@ -87,7 +87,7 @@ def pred_base_model(
     dataset: Dataset,
     batch_size: int = 32,
     device: str = "cpu"
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """Collect model outputs and labels from a dataset.
 
     Args:
@@ -97,9 +97,9 @@ def pred_base_model(
         device (str, optional): Device to run inference on ("cpu" or "cuda"). Defaults to "cpu".
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: 
-            preds: numpy array of predicted probabilities with dtype np.float32, shape (N, C).
-            labels: numpy array of ground-truth labels with dtype np.int64, shape (N, C).
+        Tuple[torch.Tensor, torch.Tensor]: 
+            preds: torch.Tensor of predicted probabilities with shape (N, C).
+            labels: torch.Tensor of ground-truth labels with shape (N, C).
     """
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     model.to(device)
@@ -115,13 +115,12 @@ def pred_base_model(
 
             prob = torch.sigmoid(logits).cpu().numpy()
 
-            # ensure labels are numpy
-            labs_np = labs.cpu().numpy()
+            prob = torch.sigmoid(logits).cpu()
 
             preds_list.append(prob)
-            labels_list.append(labs_np)
+            labels_list.append(labs)
 
-    preds = np.vstack(preds_list).astype(np.float32)
-    labels = np.vstack(labels_list).astype(np.int64)
+    preds = torch.vstack(preds_list)
+    labels = torch.vstack(labels_list).type(torch.int)
 
     return preds, labels
