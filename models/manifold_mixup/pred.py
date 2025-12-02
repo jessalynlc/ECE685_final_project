@@ -3,6 +3,7 @@ import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from typing import Tuple
+from tqdm import tqdm
 
 def get_predictions(
     model: nn.Module,
@@ -31,7 +32,7 @@ def get_predictions(
     labels_list = []
 
     with torch.no_grad():
-        for imgs, labs, *_ in loader:
+        for imgs, labs, *_ in tqdm(loader, desc=f"Eval", unit="batch"):
             imgs = imgs.to(device)
             logits, mixed_y = model(imgs)
 

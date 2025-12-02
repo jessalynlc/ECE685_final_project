@@ -15,6 +15,7 @@ References:
 
 import random
 from typing import Optional, Tuple, List
+import torch.nn.functional as F
 
 import torch
 import torch.nn as nn
@@ -73,7 +74,9 @@ class ResNetMultiMethodAugmentation(nn.Module):
 
     # forward pass with potential manifold mixup
     def forward(self, x: torch.Tensor, y: Optional[torch.Tensor] = None,
-                training_mix: bool = True) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+                swap_index=None, moex_norm='pono', moex_epsilon=1e-5,
+                moex_layer='stem', moex_positive_only=False,
+                training_mix: bool = True, ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """
         Forward pass that applies manifold mixup during training.
         
@@ -89,6 +92,10 @@ class ResNetMultiMethodAugmentation(nn.Module):
         mix_layer = None
         if self.training and training_mix and self.alpha > 0:
             mix_layer = random.choice(self.mix_layers)
+            moex_layer = random.choice(self.moex_layers)
+            if swap_index is None:
+                B = x.size(0)
+                swap_index = torch.randperm(B, device=x.device)
 
         out = self.conv1(x)
         out = self.bn1(out)
@@ -114,6 +121,12 @@ class ResNetMultiMethodAugmentation(nn.Module):
             #mix feature maps
             feat_shuf = feat[perm]
             return lam * feat + (1.0 - lam) * feat_shuf
+        
+        
+        def moex(x, swap_index, norm_type, epsilon=1e-5, positive_only=False):
+            '''MoEx operation'''
+            dtype = x.dtype
+            x = x.float()
 
        #MoEx behavior (swapping moments mean/std across batch and re-inject)
         def do_moex(feat: torch.Tensor):
@@ -204,7 +217,7 @@ class ResNetMultiMethodAugmentation(nn.Module):
 
 def build_model(num_classes: int = 14, backbone_name: str = "resnet18", alpha: float = 2.0):
     """
-    Creates ResNet model with manifold mixup.
+    Creates ResNet model with multi-method augmentation.
 
     args:
         num_classes: number of output labels
