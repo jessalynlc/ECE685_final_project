@@ -12,6 +12,7 @@ def evaluate(
     pred,          # prediction function: pred(model_name, model, dataset, batch_size)
     dataset,
     batch_size: int = 32,
+    threshold: float = 0.5,
 ) -> pd.DataFrame:
     """
     Evaluate a model using a custom prediction function with a progress bar.
@@ -22,10 +23,13 @@ def evaluate(
         pred (callable): Function pred(model_name, model, dataset, batch_size) -> (preds, labels)
         dataset: Dataset to evaluate.
         batch_size (int, optional): Batch size for evaluation.
+        threshold (float, optional): Threshold to binarize predicted probabilities for confusion matrix. Default 0.5
 
     Returns:
         pd.DataFrame: metrics ('general' and 'class_wise')
-        torch.Tensor: raw confusion matrix (C, 2, 2)
+        torch.Tensor: raw confusion matrix with shape (C, 2, 2) where each per-class matrix is:
+                      [[TN, FP],
+                       [FN, TP]]
     """
 
     model.eval()
@@ -72,4 +76,27 @@ def evaluate(
         }
     })
 
-    return df
+    # Confusion matrix (per-class)
+    # Binarize predictions at the provided threshold
+    preds_bin = (preds >= threshold).to(torch.int64)
+    labels_bin = labels.to(torch.int64)
+
+    # confusion shape (C, 2, 2) with [[TN, FP],[FN, TP]] per class
+    confusion = torch.zeros((num_classes, 2, 2), dtype=torch.int64)
+
+    # Find per-class TP, FP, FN, TN
+    for i in range(num_classes):
+        p = preds_bin[:, i]
+        t = labels_bin[:, i]
+
+        tp = int(((p == 1) & (t == 1)).sum().item())
+        fp = int(((p == 1) & (t == 0)).sum().item())
+        fn = int(((p == 0) & (t == 1)).sum().item())
+        tn = int(((p == 0) & (t == 0)).sum().item())
+
+        confusion[i, 0, 0] = tn
+        confusion[i, 0, 1] = fp
+        confusion[i, 1, 0] = fn
+        confusion[i, 1, 1] = tp
+
+    return df, confusion
