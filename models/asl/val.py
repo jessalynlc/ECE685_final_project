@@ -33,8 +33,8 @@ def val(
             for imgs, labels, _ in tepoch:
                 imgs, labels = imgs.to(device), labels.to(device)
 
-                logits, mixed_y = model(imgs, labels)
-                loss = criterion(logits, mixed_y)
+                logits = model(imgs)
+                loss = criterion(logits, labels)
 
                 running_loss += loss.item() * imgs.size(0)
                 tepoch.set_postfix(loss=loss.item())

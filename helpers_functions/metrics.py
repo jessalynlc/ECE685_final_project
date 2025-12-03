@@ -13,7 +13,7 @@ def evaluate(
     dataset,
     batch_size: int = 32,
     threshold: float = 0.5,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, torch.Tensor]:
     """
     Evaluate a model using a custom prediction function with a progress bar.
 

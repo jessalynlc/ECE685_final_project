@@ -92,7 +92,7 @@ class ResNetManifoldMixup(nn.Module):
 
         lam = None
         perm = None
-        mixed_y = None
+        mixed_y = y
 
         #this function does the feature map mixing. Mixes feature maps and labels using lambda. 
         #Completed one per forward call.

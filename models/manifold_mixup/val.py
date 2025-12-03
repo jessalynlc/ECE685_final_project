@@ -21,7 +21,7 @@ def val(
         device (str, optional): Device to use ("cpu" or "cuda"). Defaults to "cpu".
     """
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()
     model.to(device)
     model.eval()  # Set model to evaluation mode
 

@@ -43,7 +43,7 @@ def train(
                 imgs, labels = imgs.to(device), labels.to(device)
 
                 optimizer.zero_grad()
-                outputs = model(imgs)[0]
+                outputs = model(imgs)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
