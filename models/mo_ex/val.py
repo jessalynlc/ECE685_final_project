@@ -33,7 +33,7 @@ def val(
                 imgs, labels = imgs.to(device), labels.to(device)
 
                 logits = model(imgs)
-                loss = criterion(logits, logits)
+                loss = criterion(logits, labels)
 
                 running_loss += loss.item() * imgs.size(0)
                 tepoch.set_postfix(loss=loss.item())

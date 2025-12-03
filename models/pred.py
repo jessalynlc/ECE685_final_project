@@ -72,7 +72,7 @@ def pred(
             batch_size=batch_size, device=device
         )
     
-    elif model_name == "All":
+    elif model_name == "All" or model_name == "All_stochastic":
         return pred_aug_all(
             model=model, 
             dataset=dataset, 
