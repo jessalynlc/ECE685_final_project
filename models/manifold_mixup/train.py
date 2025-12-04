@@ -9,7 +9,7 @@ def train(
         model: nn.Module, 
         optimizer: optim.Optimizer,
         dataset: torch.utils.data.Dataset, start_epoch: int, end_epoch: int,
-        batch_size: int = 16, device: str = "cpu", 
+        batch_size: int = 16, device: str = "cuda", 
         save: bool = False, save_every: int = 1, checkpoint_dir="checkpoints"
     ):
     """

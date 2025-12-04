@@ -13,7 +13,7 @@ def val(
         dataset: torch.utils.data.Dataset, 
         epoch: int, 
         batch_size: int = 16, 
-        device: str = "cpu"
+        device: str = "cuda"
     ):
     """
     Validate a PyTorch model on the given dataset.
@@ -87,7 +87,7 @@ def val_base_model(
         dataset: torch.utils.data.Dataset, 
         epoch: int, 
         batch_size: int = 16, 
-        device: str = "cpu"
+        device: str = "cuda"
     ):
     """
     Validate a PyTorch model on the given dataset.

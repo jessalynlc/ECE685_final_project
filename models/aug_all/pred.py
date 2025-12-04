@@ -9,7 +9,7 @@ def get_predictions(
     model: nn.Module,
     dataset: Dataset,
     batch_size: int = 32,
-    device: str = "cpu"
+    device: str = "cuda"
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Collect model outputs and labels from a dataset.
 
