@@ -12,7 +12,8 @@ def pred(
     model: nn.Module,
     dataset: Dataset,
     batch_size: int = 32,
-    device: str = "cuda"
+    device: str = "cuda",
+    thresholds: np.ndarray = None
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Collect model outputs and labels from a dataset.
 
@@ -55,7 +56,8 @@ def pred(
         return pred_manifold_mixup(
             model=model, 
             dataset=dataset, 
-            batch_size=batch_size, device=device
+            batch_size=batch_size, device=device,
+            thresholds=thresholds
         )
     
     elif model_name == "Mo_Ex":
