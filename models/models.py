@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torchvision.models as torchvision_models
+from torchvision.models import resnet18, ResNet18_Weights
 from models.manifold_mixup.resnet_manifold_mixup import build_model as build_manifold_mixup
 from models.mo_ex.resnet_mo_ex import build_model as build_mo_ex
 
@@ -72,7 +73,9 @@ def build_base_model(num_classes: int = 15, backbone_name: str = "resnet18"):
     """
 
     #load a torchvision resnet
-    backbone = getattr(torchvision_models, backbone_name)(pretrained=False)
+    #backbone = getattr(torchvision_models, backbone_name)(pretrained=False)
+    #NEW REPLACEMENT WITH RESNET18 WITH PRETRAINED WEIGHTS
+    backbone = resnet18(weights=ResNet18_Weights.DEFAULT)
     #replace final FC layer to match the number of classes
     in_features = backbone.fc.in_features
     backbone.fc = nn.Linear(in_features, num_classes)
