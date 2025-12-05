@@ -21,6 +21,8 @@ def create_class_mappings(csv_file: str, label_column: str = "Finding Labels"):
     flat_labels = [label for sublist in all_labels for label in sublist]
 
     unique_labels = sorted(set(flat_labels))  # sort for deterministic indices
+    #Further work - getting rid of No Findings class
+    unique_labels.remove("No Finding")
 
     # Create mappings
     class_to_idx = {label: idx for idx, label in enumerate(unique_labels)}
